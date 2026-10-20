@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3157a4">
+<title>特別支援教育 20問チャレンジ</title>
+<style>
+:root{--blue:#3157a4;--blue2:#eaf0ff;--ink:#202638;--muted:#687188;--line:#dce2ee;--bg:#f4f6fb;--green:#19794b;--red:#b42332}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;line-height:1.65}
+header{background:linear-gradient(135deg,#3157a4,#547bd0);color:#fff;padding:22px 18px 28px;border-radius:0 0 24px 24px}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px 30px}header .wrap{padding-bottom:0}
+.kicker{font-size:12px;letter-spacing:.12em;opacity:.9;font-weight:700}h1{font-size:24px;line-height:1.35;margin:6px 0 8px}header p{margin:0;font-size:14px;opacity:.95}
+.panel{background:white;border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:16px;box-shadow:0 5px 18px rgba(28,46,87,.05)}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px;font-weight:700}
+.progress{height:8px;background:#e9edf6;border-radius:99px;overflow:hidden;margin:10px 0 18px}.bar{height:100%;width:5%;background:var(--blue);border-radius:99px;transition:width .2s}
+.stem{font-size:17px;font-weight:750;margin:0 0 14px}.instruction{font-size:13px;color:var(--muted);margin:-6px 0 14px}
+.options{display:grid;gap:10px}.option{display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:12px 13px;color:var(--ink);font:inherit;cursor:pointer;transition:.15s}
+.option:active{transform:scale(.995)}.option.selected{border-color:var(--blue);background:var(--blue2)}.num{flex:0 0 29px;height:29px;border-radius:50%;display:grid;place-items:center;background:#edf0f7;color:#35415d;font-weight:800;font-size:14px}.selected .num{background:var(--blue);color:white}.opttext{font-size:14px;line-height:1.6}
+.actions{display:flex;gap:10px;margin-top:18px}.btn{border:0;border-radius:13px;padding:13px 16px;font:inherit;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:white;flex:1}.secondary{background:#eef1f7;color:#35415d}.btn:disabled{opacity:.4;cursor:not-allowed}
+.feedback{border-radius:13px;padding:12px 14px;margin-top:14px;font-weight:750;display:none}.feedback.good{display:block;background:#e8f7ef;color:var(--green)}.feedback.bad{display:block;background:#fff0f0;color:var(--red)}
+.small{font-size:12px;color:var(--muted);margin-top:14px}.result-score{font-size:44px;font-weight:850;color:var(--blue);line-height:1.2}.result-title{font-size:22px;font-weight:800;margin:0 0 6px}.review-item{padding:14px 0;border-bottom:1px solid var(--line)}.review-item:last-child{border-bottom:0}.review-q{font-weight:800;margin-bottom:5px}.review-a{font-size:14px;color:var(--muted)}.correct{color:var(--green);font-weight:800}.incorrect{color:var(--red);font-weight:800}
+.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 8px}
+@media(min-width:600px){header{padding:28px 20px 34px}h1{font-size:29px}.panel{padding:24px}.opttext{font-size:15px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="kicker">SPECIAL SUPPORT EDUCATION</div><h1>特別支援教育<br>20問チャレンジ</h1><p>1問ずつ答えて、最後に結果をチェックしよう。</p></div></header>
+<main class="wrap">
+<section class="panel" id="quiz">
+<div class="topline"><span id="count">QUESTION 1 / 20</span><span id="answered">回答 0 / 20</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<p class="stem" id="stem">次の1〜5のうち、正しいものを一つ選びなさい。</p>
+<p class="instruction" id="instruction">もっとも適切な選択肢を1つ選んでください。</p>
+<div class="options" id="options"></div>
+<div id="feedback" class="feedback" aria-live="polite"></div>
+<div class="actions"><button class="btn secondary" id="back">戻る</button><button class="btn primary" id="next" disabled>回答する</button></div>
+<p class="small">※選んだ答えはこの画面内で採点されます。</p>
+</section>
+<section class="panel hidden" id="result">
+<p class="result-title">チャレンジ結果</p><div class="result-score" id="score">0 / 20</div><p id="message"></p>
+<div class="actions"><button class="btn primary" id="reviewBtn">答えを確認する</button><button class="btn secondary" id="retryBtn">もう一度挑戦</button></div>
+</section>
+<section class="panel hidden" id="review">
+<h2 style="margin-top:0">答え合わせ</h2><div id="reviewList"></div>
+<div class="actions"><button class="btn primary" id="retryBtn2">もう一度挑戦</button></div>
+</section>
+</main>
+<footer>特別支援教育・学習用クイズ</footer>
+<script>
+const questions = [{"n": 1, "options": ["特別支援学校の教育課程は、小・中・高等学校に準じてい るため、自立活動の指導については必ずしも行わなくてもよい。", "特別支援学級の教育課程の編成については、小学校、中学 校学習指導要領を原則としているため、特別の教育課程は認められていない。", "教育、医療、福祉、労働等の関係機関が連携・協力して作成するものが個別の指導計画である。", "個別の教育支援計画は、児童生徒が在学中に校長が中心となり学校が作成するものである。", "個別の教育支援計画や個別の指導計画は、通常の学級に在籍する障害のある児童生徒についても必ず作成することが 学習指導要領に示されている。"], "answer": 5}, {"n": 2, "options": ["視力が同じであれば、実際の見え方も同じである。", "わが国における組織的な視覚障害教育・聴覚障害教育の始 まりは、大正期に入ってからである。", "視覚障害のある子供は、見えない、見えにくいだけであり、 発達に遅れはみられない。", "聴覚障害のある全ての子供の指導では、手話による意思の 相互伝達が行われるよう指導方法を工夫する。", "聴覚障害とは、一般に耳介から大脳の第一次聴覚野に至る までの経路のどこかの部位に障害が生じている状態を指す。"], "answer": 5}, {"n": 3, "options": ["聴覚器官のどの部位に聴覚障害の原因があるかによって、音がひずんで聞こえ、言葉の明瞭度が著しく低下する伝音難聴と音が小さく聞こえる感音難聴に分けられる。", "視覚は「接触感覚」である。", "「通級による指導(難聴)」では、通常の学級での教科の遅れを取り戻すため補充指導を行っている。", "盲学校、聾学校の小学部・中学部の義務制完成後、在籍児童生徒数は、増加の一途をたどっている。", "視覚は、主に眼球、視神経などの視路、視覚中枢の働きによって外界からの光を刺激として生じる感覚である。"], "answer": 5}, {"n": 4, "options": ["知的障害の実態把握は、標準化された個別式の知能検査や発達検査によって示される数値のみによって行われる。", "特別支援学校(知的障害)の教育課程の編成に当たっては、 幼児児童生徒の障害の状態や発達段階を的確に把握し、地域 の特色を踏まえて、実生活に結びついた内容を中心とすることが重要である。", "学齢期の児童が長期間の入院をする場合、病院という隔離 された環境ではあるが、経験不足に陥ったり、仲間関係や社 会適応の構築が未発達になったりすることは決してない。", "病弱教育は、学習の遅れなどを補完し、学力を補償する上 で重要な意義があるが、児童生徒に生きがいを与えたり、心 理的安定をもたらしたりすることはない。", "通常の学級に在籍する病弱・身体虚弱の児童生徒は、通級 による指導の対象とはならない。"], "answer": 2}, {"n": 5, "options": ["肢体不自由のある子供の学びの場は特別支援学校と特別支援学級のみである。", "特別支援学校の対象となる肢体不自由の障害として、補装具によって歩行、筆記等日常生活における基本的な動作が可能な程度のものとしている。", "肢体不自由特別支援学校に通う子供の障害は多様だが、在籍する子供の多くは筋原性疾患の脳性まひである。", "肢体不自由のある子供の教育では、車椅子など補助具や補 助用具と呼ばれる機器を活用して学習への参加を促している。", "肢体不自由のある子供の自立活動の指導では、身体の動き が大きな課題となるため、身体の動きの指導を中心に行えば よい。"], "answer": 4}, {"n": 6, "options": ["文部科学省の定義による「重複障害者」とは、視覚障害、聴覚障害、知的障害、肢体不自由、病弱の", "特別支援学校の重複障害学級においては、一学級の児童生徒は", "医療的ケアを必要とする児童生徒は、小学校や中学校で学ぶことが困難なため、すべて特別支援学校で学ぶことになる。", "重複障害のある児童生徒の教育課程については「自立活動を主とする教育課程」で学ぶことが定められている。", "重複障害がある児童生徒の実態把握では、標準化された発 達検査と校内での行動観察が行われる。学校での指導や支援を検討するにあたって、家庭での様子を知る必要はない。"], "answer": 2}, {"n": 7, "options": ["特別支援学校の小学部に在籍する児童のうち、重複障害学級で学んでいる児童は、1 割に満たない。", "学校における医療的ケアは、看護師だけが行うことができる。", "重複障害となる原因は、胎内感染症、脳奇形、染色体異常等、すべて出生前の原因である。", "重複障害がある子供は、音声言語でコミュニケーションが とれるとは限らない。周りの環境から情報を受け取る手段が、 子供一人一人で異なるため、情報提示の仕方に工夫が必要で ある。", "重複障害や重度の障害がある子供では、「子供が質的に新 しい力を獲得する、できることが増えるなど、子供のもつ能 力が高度化していく」というタテ方向への発達の視点のみに 基づく支援が重要である。"], "answer": 4}, {"n": 8, "options": ["発達障害の特性は生涯にわたりみられ、症状が重なったり 目立たなくなったりすることはなく、診断が変わったり加えられたりすることはない。", "発達障害のある児童生徒の二次的な障害が最も生じやすい時期は小学校に就学した集団生活のスタート時で、その後はあまりみられない。", "発達障害のある児童生徒の不適応の問題は、適切な指導や必要な支援がなされないことによる二次的な障害によるものも多い。", "二次的な障害には、反抗、暴力、家出、反社会的行動など他者に向けて表現する「内在化障害」と、不安、強迫、対人 恐怖、引きこもりなど自己の内的な苦痛を生じる「外在化障 害」がある。", "アセスメントの基本は心理検査等を用いたアセスメント である。子供の実態把握については、まず心理検査等の結果 から行うようにする。"], "answer": 3}, {"n": 9, "options": ["知的発達に遅れがある児童生徒でも、認知能力にアンバラ ンスが大きい場合には、学習障害のある児童生徒と判断することができる。", "学習障害とは、聞く、話す、読む、書く、計算する、推論する能力のうち特定のものの習得と使用に著しい困難を示 す状態を指すが、注意欠陥多動性障害や自閉症等の発達障害 と併存する場合もある。", "学習障害は、その原因として、中枢神経系に何らかの機能 不全があると推定されるが、視覚障害、聴覚障害、知的障害、 情緒障害などや、環境的な要因が直接の原因となる場合もある。", "学習障害の指導・支援では、児童生徒の抱える課題点や困 難な点に焦点を当て、障害による特定の困難さに対する指 導・支援を集中して行い、苦手意識を克服させることが大切 である。", "学習障害のある児童生徒の場合には、通級による指導にお いて教科の遅れを取り戻すための補充指導が認められている。"], "answer": 2}, {"n": 10, "options": ["注意欠陥多動性障害は、精神疾患の診断・統計マニュア ル(DSM-5-TR)が示す不注意または多動性-衝動性に関 する行動特徴に該当する項目のうち一つでも激しくみられる場合に診断される。", "注意欠陥多動性障害のある児童生徒は、感情や行動のコ ントロールの難しさ、ルールや約束が守れないことなどか ら友達ともトラブルになりやすい。対応は、注意をくり返 し本人の自覚を促すことが最優先となる。", "注意欠陥多動性障害は、中枢神経系に何らかの機能不全 があると推定されているが、学習障害や自閉症など他の発 達障害の症状を併せ有することはない。", "注意欠陥多動性障害のある児童生徒への対応では、誤りを指摘して修正させる対応よりも、望まれる行動を認められる経験を積み、適切な行動に意識が向けられるような支援が大切である。", "注意欠陥多動性障害のある児童生徒は、学校や家庭など のどこか一カ所でも症状による不適応の状態が頻繁に見ら れている場合に診断される。"], "answer": 4}, {"n": 11, "options": ["自閉症のある児童生徒は、その症状として必ず知的障害を 伴っている。", "自閉症の症状は発達早期", "自閉症のある児童生徒は、他者との社会的関係の形成に困難さがあるので、やりとりの方法をいろいろ変え、誰とでもやりとりができるようにすることも重要である。", "他者に自分の気持ちを伝えることが難しく、自分を叩いて しまったり、他者に対して不適切な関わり方をしてしまった りすることがある場合は、その場で厳しく制止し定着しないようにする。", "構造化は、米国ノースキャロライナ州の TEACCH プログラムで紹介されている決まった形があり、その内容を勝手に修 正することはできない。"], "answer": 2}, {"n": 12, "options": ["通級による指導は個別指導が基本であり、対人関係や社会 性に困難さのある自閉症のある児童生徒の場合には、不安感が高まる小集団指導はあまり実施しない方がよい。", "気持ちを相手に伝えることが難しい場合は、感情を表した 絵やシンボル等の視覚的な手がかりを活用し、できるだけ早くことばでのコミュニケーションができるようにする。", "日課と異なる行事や急な予定変更などで混乱したり不安に なったりして、求められた行動がとれない場合は、くり返し 経験を重ねることにより慣れさせていく。", "特定の食物や衣服に強いこだわりを示すため、極端な偏食 があったり、季節にあわせた衣服の調整ができなかったりす る場合があるが、そのほとんどは生活経験とともに改善して いく。", "自閉症のある児童生徒は自分の言動がまわりにどのような 影響を与えているのか状況を客観的に把握することに難しさ があることから、いじめやからかいにあったりすることもあ る。"], "answer": 5}, {"n": 13, "options": ["特別支援教育で ICT を活用する意義は、「学習上又は生活上 の困難を改善・克服させ、指導の効果を高めること」である。", "読むことの困難さを支援するため、文部科学省は音声教材 という教科書のデジタルデータを 6 つの団体に委託して作成している。これらはすべて音声だけで作られている。", "書くことに困難がある児童生徒にはパソコンのキーボード で入力した方がよい場合もある。その場合は、他の方法で混乱させないようにキーボードの入力だけを指導した方が良い。", "聴覚障害のある児童生徒には、点字キーボードや音声入力 などの方法でコンピュータを操作することにより、自分で学ぶことができるようになる。", "特別支援教育で ICT の活用を広げるためには、まずは使い 方を教えることが大切で、その上でどのような事に使えるか を考える事になる。"], "answer": 1}, {"n": 14, "options": ["項は、障害等の特別の支援を必要と する子供の教育、すなわち特別支援教育を特別支援学校だけでなく小・中学校等の通常の学校でも行うことを示している。", "通常の学級にも、障害のある子供や教育上特別の支援を必 要とする子供が在籍している可能性があり、全ての教職員が特別支援教育の目的や意義を理解することが求められている。", "校長は、校内委員会を設置し、特別支援教育コーディネー ターを指名し、校務分掌に明確に位置付けるなどして、学校全体の特別支援教育の体制を充実させる必要がある。", "校内委員会は校内の関係者との検討の場であり、校外の専門家との連携は必要ない。", "小・中学校等の通常の学校は特別支援教育の推進に際して、特別支援学校等に対し専門的な助言又は援助を要請すること ができる。"], "answer": 5}, {"n": 15, "options": ["特別支援教育コーディネーターは校内委員会の企画・運営を担い、教育上特別の支援を必要とする子供の情報を収集する。", "特別支援教育コーディネーターは、校内の調整役として、 必要に応じて特別支援教育支援員、スクールカウンセラー、 スクールソーシャルワーカー等をつなぐ役割を果たす。", "個別の教育支援計画、個別の指導計画の作成支援は、特別 支援教育コーディネーターの役割とはされていない。", "特別支援教育コーディネーターは、教育上特別の支援を必 要とする子供のケース会議を開催する役割を担う。", "特別支援教育コーディネーターは、通常の学級の担任、特 別支援学級担任、通級指導教室担当、必要に応じて保護者や 特別支援学校、巡回相談員との連携を大切にする。"], "answer": 3}, {"n": 16, "options": ["障害のある子供などの支援に際して、特別支援学校等の助 言又は援助を活用しつつ、個々の障害の状態等に応じた指導 内容や指導方法の工夫を組織的かつ計画的に検討することが大切である。", "通常の学級における学級経営は、学級担任が周りを頼ることなく、担任の責任において実施することが強く求められている。", "学習指導や生徒指導などにおいて、全ての教職員が協力して子供の指導に当たることが大切である。", "通常の学級担任・教科担任は、自身の学級に教育上特別の支援を必要とする子供がいることを常に想定し、学校組織を 活用し、子供のつまずきの早期発見に努めるとともに行動の背景を正しく理解する必要がある。", "ユニバーサルデザインとは、調整又は特別な設計を必要と することなく、最大限可能な範囲で全ての人が使用すること のできる製品、環境、計画及びサービスの設計のことをいう。"], "answer": 2}, {"n": 17, "options": ["障害のある子供などが学習活動を行う場合に生じる困難さ を事前に把握・検討し、全ての子供が取り組みやすい授業づくりをする考え方がユニバーサルデザインである。", "全ての子供にとって、分かる、できる、楽しい授業であることが求められている。", "授業のめあてや学習の流れ等は板書せず、子供が集中して聞く態度を育てることが大切であると学習指導要領で示している。", "通常の学級における授業であっても、気持ちの変化を図や矢印などで視覚的に分かるように示してから言葉で表現させたりするなどの配慮が必要なことがある。", "声を出して発表することや人前で話すことへの不安を抱いている場合には、紙やホワイトボード、ICT 機器を活用する 等、多様な表現方法を子供が選択できるように工夫すること も大切である。"], "answer": 3}, {"n": 18, "options": ["学校教育法第 81 条第", "項では特別支援学校の目的を規定している。", "特別支援学級は、障害のある子供に、より充実した教育を 行うために設置する特別な学級で、通常の学級、特別支援学 校、通級による指導と同様に、「多様な学びの場」の一つとし て機能している。", "自閉症・情緒障害特別支援学級の対象「自閉症」の診断が ある子供に限定されている。", "自閉症・情緒障害特別支援学級の在籍者数は特別支援教育 が始まった平成 19 年以降、概ね横ばいである。"], "answer": 3}, {"n": 19, "options": ["通級による指導の対象は、知的障害者、言語障害者、自閉 症者、情緒障害者、弱視者、難聴者、学習障害者、注意欠陥多動性障害者、その他障害のある者となっている。", "通級による指導は、通常の教育課程に特別の指導を加える 特別の教育課程を編成するため、指導を受ける児童生徒は他の児童生徒よりも授業時数が必ず多くなる。", "児童生徒が在籍する学校以外の学校において通級による指導を受ける場合(他校通級)は、他の学校で受けた授業を在 籍する学校の特別の教育課程に係る授業とみなすことができる。", "通級による指導の指導内容は、障害による学習上又は生活 上の困難の改善・克服を目的とした自立活動を参考にした指 導と教科学習の遅れを取り戻すための補充指導である。", "通級による指導の授業時数については特に規定はなく、児 童生徒の必要性に応じて何時間でも設定できることになって いる。"], "answer": 3}, {"n": 20, "options": ["特別支援学校のセンター的機能は、幼稚園、小学校、中学 校、義務教育学校、高等学校又は中等教育学校の教育にとっても重要であるが、法的な位置付けはなされていない。", "特別支援学校の特別支援教育コーディネーターは、校内の 児童生徒の教育活動を行う上で重要な役割を担っているが、 特別支援学校のセンター的機能に関与することはほとんどない。", "の規定に該当する障害の程度の児童生徒への支援において、特別支 援学校のセンター的機能としての支援が重要な役割を果たし ている。", "特別支援学校のセンター的機能を発揮するためには、地域 の小・中学校等の特別支援教育コーディネーターとの連携と は関係なく、特別支援学校のコーディネーターの専門性をよ り一層高めることが重要である。", "特別支援学校のセンター的機能は、特別支援学校の特別支 援教育コーディネーターがその役割のすべてを担い、学校組 織とは完全に独立して運用されるものである。"], "answer": 3}];
+const answers = {};
+let current = 0;
+const $ = id => document.getElementById(id);
+function render(){
+  $('quiz').classList.remove('hidden'); $('result').classList.add('hidden'); $('review').classList.add('hidden');
+  const q=questions[current];
+  $('count').textContent=`QUESTION ${current+1} / ${questions.length}`;
+  $('answered').textContent=`回答 ${Object.keys(answers).length} / ${questions.length}`;
+  $('bar').style.width=`${(current+1)/questions.length*100}%`;
+  $('stem').textContent=(current+1>=15 && current+1<=17)?'次の1〜5のうち、誤っているものを一つ選びなさい。':'次の1〜5のうち、正しいものを一つ選びなさい。';
+  $('instruction').textContent=(current+1>=15 && current+1<=17)?'※この問題は「誤っているもの」を選びます。':'もっとも適切な選択肢を1つ選んでください。';
+  $('options').innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const b=document.createElement('button'); b.className='option'+(answers[current]===i+1?' selected':''); b.type='button';
+    b.innerHTML=`<span class="num">${i+1}</span><span class="opttext"></span>`; b.querySelector('.opttext').textContent=opt;
+    b.onclick=()=>{answers[current]=i+1;render();}; $('options').appendChild(b);
+  });
+  $('feedback').className='feedback'; $('feedback').textContent='';
+  $('back').disabled=current===0;
+  $('next').disabled=!answers.hasOwnProperty(current);
+  $('next').textContent=current===questions.length-1?'結果を見る':'回答する';
+}
+$('back').onclick=()=>{if(current>0){current--;render();}};
+$('next').onclick=()=>{
+ if(!answers.hasOwnProperty(current))return;
+ const isCorrect=answers[current]===questions[current].answer;
+ if(current<questions.length-1){current++;render();}
+ else showResult();
+};
+function showResult(){
+  $('quiz').classList.add('hidden'); $('review').classList.add('hidden'); $('result').classList.remove('hidden');
+  let score=0; questions.forEach((q,i)=>{if(answers[i]===q.answer)score++;});
+  $('score').textContent=`${score} / ${questions.length}`;
+  $('message').textContent=score===20?'全問正解！すばらしい！':score>=15?'よくできました！間違えた問題を確認してみよう。':'答え合わせをして、もう一度挑戦してみよう。';
+}
+$('reviewBtn').onclick=()=>{
+ $('result').classList.add('hidden');$('review').classList.remove('hidden');
+ $('reviewList').innerHTML='';
+ questions.forEach((q,i)=>{
+  const ok=answers[i]===q.answer; const item=document.createElement('div');item.className='review-item';
+  const title=document.createElement('div');title.className='review-q';title.textContent=`問${i+1}　${ok?'正解':'不正解'}`;title.classList.add(ok?'correct':'incorrect');
+  const your=document.createElement('div');your.className='review-a';your.textContent=`あなたの回答：${answers[i]||'未回答'}　／　正解：${q.answer}`;
+  const opt=document.createElement('div');opt.className='review-a';opt.textContent=`正解の選択肢：${q.options[q.answer-1]}`;
+  item.append(title,your,opt);$('reviewList').appendChild(item);
+ });
+};
+function retry(){Object.keys(answers).forEach(k=>delete answers[k]);current=0;render();}
+$('retryBtn').onclick=retry;$('retryBtn2').onclick=retry;
+render();
+</script>
+</body></html>
